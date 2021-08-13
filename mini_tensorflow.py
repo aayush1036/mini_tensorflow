@@ -100,6 +100,36 @@ class Network:
         return params_list
 
 if __name__ == '__main__':
+    # Excel question 
+    # Initializations
+    # First Layer
+    X0 = np.array([ # X = (nx,m)
+        [2,5,1,5],
+        [3,6,3,6],
+        [4,8,7,7]
+    ])
+    w1 = np.array([ #w = (n1,nx)
+        [0.5,0.4,0.3],
+        [0.7,0.8,0.1],
+        [0.4,0.5,0.6],
+        [0.1,0.2,0.3]
+    ])
+    b1 = np.array([0.2,0.3,0.4,0.5]).reshape(-1,1) # b = (n1,1)
+
+    #Second Layer
+    w2 = np.array([0.5,0.3,0.2,0.1]).reshape(1,-1) #(n2,n1)
+    b2 = np.array([0.5]).reshape(-1,1) #(n2,1)
+
+    input_layer = Layer(inputs=X0,n=4,weights=w1,bias=b1,name='First hidden layer')
+    second_layer = Layer(inputs=input_layer.fit(),n=1,weights=w2,bias=b2,name='Output Layer')
+
+    nn = Network(layers=[input_layer,second_layer])
+    output = nn.fit()
+    summary = nn.summary()
+    print(summary)
+    print(nn.params)
+
+    # Lecture question 
     inputs = np.random.rand(64,10)
     layer1 = Layer(name='First hidden layer',inputs=inputs,n=4)
     layer2 = Layer(name='Second hidden layer',inputs=layer1.fit(),n=3)
