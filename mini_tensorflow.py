@@ -48,7 +48,7 @@ class Layer:
         return a
 
 class Network:
-    def __init__(self,layers:list) -> None:
+    def __init__(self,layers:list,y:np.array,alpha=0.01) -> None:
         """Initializes the neural network with the given layers
 
         Args:
@@ -58,16 +58,18 @@ class Network:
             TypeError: Raises a TypeError if any of the layers in the layers list is not a Layer instance
         """            
         self.layers = layers
+        self.y = y
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
         print('Initialized the neural network')
-    def fit(self)->np.array:
+    def fit(self,epoch)->np.array:
         """Propagates through the layers and returns the final output
 
         Returns:
             np.array: The array containing the output of the network
-        """        
+        """      
+        # TODO - Update the back propagation code   
         for layer in self.layers[1:]:
             output = layer.fit()
         return output
