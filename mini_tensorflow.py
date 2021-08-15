@@ -23,6 +23,7 @@ class Layer:
         if self.bias is None:
             self.bias = np.random.rand(n,1)
         self.activation = activation
+        self.output = self.fit()
     def __sigmoid(self,x:np.array)->np.array:
         """Sigmoid activation function for the neural network
         Calculates sigmoid value by using the formula sigmoid(z) = 1/(1+e^(-z))
@@ -59,10 +60,18 @@ class Network:
         """            
         self.layers = layers
         self.y = y
+        self.alpha = alpha
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
         print('Initialized the neural network')
+    def backward(self):
+        for i in range(1,len(self.layers)):
+            error = np.array((self.layers[len(self.layers)-i-1].output-self.layers[len(self.layers)-i].output)**2)
+            diff = np.dot(self.layers[len(self.layers)-i].inputs.T, error)
+            print(diff.shape)          
+            print(self.layers[len(self.layers)-i].weights.shape)
+            print('\n')
     def fit(self,epoch)->np.array:
         """Propagates through the layers and returns the final output
 
@@ -138,3 +147,4 @@ if __name__ == '__main__':
     layer3 = Layer(name='Output layer',n=1,inputs=layer2.fit())
     nn_question = Network([layer1,layer2,layer3],y=np.zeros(64))
     print(nn_question.params)
+    print(nn.backward())
