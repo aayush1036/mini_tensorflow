@@ -125,8 +125,8 @@ if __name__ == '__main__':
     input_layer = Layer(inputs=X0,n=4,weights=w1,bias=b1,name='First hidden layer')
     second_layer = Layer(inputs=input_layer.fit(),n=1,weights=w2,bias=b2,name='Output Layer')
 
-    nn = Network(layers=[input_layer,second_layer])
-    output = nn.fit()
+    nn = Network(layers=[input_layer,second_layer],y=[1,2,3,4])
+    output = nn.fit(epoch=1)
     summary = nn.summary()
     print(summary)
     print(nn.params)
@@ -136,5 +136,5 @@ if __name__ == '__main__':
     layer1 = Layer(name='First hidden layer',inputs=inputs,n=4)
     layer2 = Layer(name='Second hidden layer',inputs=layer1.fit(),n=3)
     layer3 = Layer(name='Output layer',n=1,inputs=layer2.fit())
-    nn_question = Network([layer1,layer2,layer3])
+    nn_question = Network([layer1,layer2,layer3],y=np.zeros(64))
     print(nn_question.params)
