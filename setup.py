@@ -3,8 +3,8 @@ import os
 
 with open('README.md','r') as f:
     long_description = f.read()
-VERSION = '0.0.13'
-DESCRIPTION = 'Streaming video data via networks'
+VERSION = '0.0.1'
+DESCRIPTION = 'Ease working with neural networks'
 LONG_DESCRIPTION = 'A package that allows to build simple streams of video, audio and camera data.'
 
 # Setting up
