@@ -9,7 +9,7 @@ LONG_DESCRIPTION = 'A package that allows to build simple streams of video, audi
 
 # Setting up
 setup(
-    name="vidstream",
+    name="MiniTensorflow",
     version=VERSION,
     author="Aayushmaan Jain",
     author_email="<aayushmaan1306@gmail.com.com>",
