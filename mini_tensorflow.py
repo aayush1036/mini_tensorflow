@@ -92,12 +92,25 @@ class Network:
         summary_df['Total parameters'] = total_params
         return summary_df
     @property
-    def params(self):
+    def params(self)->list:
+        """Gets the total number of parameters in each layer
+
+        Returns:
+            params_list: The list containing the total number of parameters in each layer
+        """        
         params_list = []
         for layer in self.layers:
             params_list.append(layer.weights.size+layer.bias.size)
         return params_list
-    def compute_cost(self,y):
+    def compute_cost(self,y:np.array)->float:
+        """Calculates the cost of error compared to a given set of y values 
+
+        Args:
+            y (np.array): The target vector/dependent variable
+
+        Returns:
+            float: The cost at that iteration
+        """       
         outputs = self.fit()
         cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
