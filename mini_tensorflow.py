@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd 
-np.random.seed(123)
 
 class Layer:
     def __init__(self,name:str,inputs:np.array,n,activation = 'sigmoid',weights=None,bias=None) -> None:
@@ -13,17 +12,17 @@ class Layer:
             activation (str, optional): The activation function to use ['sigmoid','tanh']. Defaults to 'sigmoid'.
             weights ([type], optional): The weights for the neural network, choses random weights if not passed. Defaults to None.
             bias ([type], optional): The bias for the neural network, choses random bias if not passed. Defaults to None.
-        """        
+        """    
+        np.random.seed(1)    
         self.inputs = inputs
         self.weights = weights
         self.bias = bias
         self.name = name
         if self.weights is None:
-            self.weights = np.random.rand(n,inputs.shape[0])
+            self.weights = np.random.randn(n,inputs.shape[0])
         if self.bias is None:
-            self.bias = np.random.rand(n,1)
+            self.bias = np.zeros((n,1))
         self.activation = activation
-        self.output = self.fit()
     def __sigmoid(self,x:np.array)->np.array:
         """Sigmoid activation function for the neural network
         Calculates sigmoid value by using the formula sigmoid(z) = 1/(1+e^(-z))
@@ -47,9 +46,8 @@ class Layer:
         elif self.activation.strip().lower() == 'tanh':
             a = np.tanh(z)
         return a
-
 class Network:
-    def __init__(self,layers:list,y:np.array,alpha=0.01) -> None:
+    def __init__(self,layers:list) -> None:
         """Initializes the neural network with the given layers
 
         Args:
@@ -59,26 +57,16 @@ class Network:
             TypeError: Raises a TypeError if any of the layers in the layers list is not a Layer instance
         """            
         self.layers = layers
-        self.y = y
-        self.alpha = alpha
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
         print('Initialized the neural network')
-    def backward(self):
-        for i in range(1,len(self.layers)):
-            error = np.array((self.layers[len(self.layers)-i-1].output-self.layers[len(self.layers)-i].output)**2)
-            diff = np.dot(self.layers[len(self.layers)-i].inputs.T, error)
-            print(diff.shape)          
-            print(self.layers[len(self.layers)-i].weights.shape)
-            print('\n')
-    def fit(self,epoch)->np.array:
+    def fit(self)->np.array:
         """Propagates through the layers and returns the final output
 
         Returns:
             np.array: The array containing the output of the network
-        """      
-        # TODO - Update the back propagation code   
+        """        
         for layer in self.layers[1:]:
             output = layer.fit()
         return output
@@ -107,8 +95,12 @@ class Network:
     def params(self):
         params_list = []
         for layer in self.layers:
-            params_list.append(layer.weights.size + layer.bias.size)
+            params_list.append(layer.weights.size+layer.bias.size)
         return params_list
+    def compute_cost(self,y):
+        outputs = self.fit()
+        cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
+        return cost
 
 if __name__ == '__main__':
     # Excel question 
@@ -134,17 +126,25 @@ if __name__ == '__main__':
     input_layer = Layer(inputs=X0,n=4,weights=w1,bias=b1,name='First hidden layer')
     second_layer = Layer(inputs=input_layer.fit(),n=1,weights=w2,bias=b2,name='Output Layer')
 
-    nn = Network(layers=[input_layer,second_layer],y=[1,2,3,4])
-    output = nn.fit(epoch=1)
+    nn = Network(layers=[input_layer,second_layer])
+    nn.fit()
+
     summary = nn.summary()
     print(summary)
     print(nn.params)
 
-    # Lecture question 
+    print(f"Total {summary['Total parameters'].sum()} parameters were initialized in the network")
+
+    # Trying out the question given to us in the lecture 
     inputs = np.random.rand(64,10)
     layer1 = Layer(name='First hidden layer',inputs=inputs,n=4)
     layer2 = Layer(name='Second hidden layer',inputs=layer1.fit(),n=3)
     layer3 = Layer(name='Output layer',n=1,inputs=layer2.fit())
-    nn_question = Network([layer1,layer2,layer3],y=np.zeros(64))
+
+    nn_question = Network([layer1,layer2,layer3])
+
+    summary_question = nn_question.summary()
+    print(summary_question)
+
     print(nn_question.params)
-    print(nn.backward())
+    print(f"Total {summary_question['Total parameters'].sum()} parameters were initiialized in the network")
