@@ -3,7 +3,7 @@ import os
 
 with open('README.md','r') as f:
     long_description = f.read()
-VERSION = '0.0.1'
+VERSION = '0.0.3'
 DESCRIPTION = 'Ease working with neural networks'
 LONG_DESCRIPTION = 'A package that allows to build simple streams of video, audio and camera data.'
 
@@ -17,7 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['numpy'],
+    install_requires=['numpy','pandas'],
     keywords=['python', 'neural', 'network', 'tensorflow', 'keras', 'Machine Learning'],
     classifiers=[
         "Development Status :: 1 - Planning",

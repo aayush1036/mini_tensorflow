@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd 
+import pandas as pd
 
 class Layer:
     def __init__(self,name:str,inputs:np.array,n,activation = 'sigmoid',weights=None,bias=None) -> None:
@@ -114,50 +114,3 @@ class Network:
         outputs = self.fit()
         cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
-
-if __name__ == '__main__':
-    # Excel question 
-    # Initializations
-    # First Layer
-    X0 = np.array([ # X = (nx,m)
-        [2,5,1,5],
-        [3,6,3,6],
-        [4,8,7,7]
-    ])
-    w1 = np.array([ #w = (n1,nx)
-        [0.5,0.4,0.3],
-        [0.7,0.8,0.1],
-        [0.4,0.5,0.6],
-        [0.1,0.2,0.3]
-    ])
-    b1 = np.array([0.2,0.3,0.4,0.5]).reshape(-1,1) # b = (n1,1)
-
-    #Second Layer
-    w2 = np.array([0.5,0.3,0.2,0.1]).reshape(1,-1) #(n2,n1)
-    b2 = np.array([0.5]).reshape(-1,1) #(n2,1)
-
-    input_layer = Layer(inputs=X0,n=4,weights=w1,bias=b1,name='First hidden layer')
-    second_layer = Layer(inputs=input_layer.fit(),n=1,weights=w2,bias=b2,name='Output Layer')
-
-    nn = Network(layers=[input_layer,second_layer])
-    nn.fit()
-
-    summary = nn.summary()
-    print(summary)
-    print(nn.params)
-
-    print(f"Total {summary['Total parameters'].sum()} parameters were initialized in the network")
-
-    # Trying out the question given to us in the lecture 
-    inputs = np.random.rand(64,10)
-    layer1 = Layer(name='First hidden layer',inputs=inputs,n=4)
-    layer2 = Layer(name='Second hidden layer',inputs=layer1.fit(),n=3)
-    layer3 = Layer(name='Output layer',n=1,inputs=layer2.fit())
-
-    nn_question = Network([layer1,layer2,layer3])
-
-    summary_question = nn_question.summary()
-    print(summary_question)
-
-    print(nn_question.params)
-    print(f"Total {summary_question['Total parameters'].sum()} parameters were initiialized in the network")

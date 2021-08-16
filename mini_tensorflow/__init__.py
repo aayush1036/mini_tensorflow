@@ -1,2 +1,2 @@
-from mini_tensorflow import Layer
-from mini_tensorflow import Network
+from mini_tensorflow.MiniTensorflow import Layer
+from mini_tensorflow.MiniTensorflow import Network
