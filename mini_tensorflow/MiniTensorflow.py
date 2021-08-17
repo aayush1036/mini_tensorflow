@@ -46,13 +46,7 @@ class Layer:
         Returns:
             np.array: The array with ReLU function applied 
         """              
-        outputs = []
-        for element in x:
-            if element>0:
-                outputs.append(x)
-            else:
-                outputs.append(0)
-        return np.array(outputs,dtype=float)
+        return np.maximum(0,x)
     def derivative(self)->np.array:
         """Returns the differentiation of the activation function for a corresponding layer
 
