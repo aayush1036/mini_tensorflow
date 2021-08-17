@@ -2,27 +2,31 @@ import numpy as np
 import pandas as pd
 
 class Layer:
-    def __init__(self,name:str,inputs:np.array,n,activation = 'sigmoid',weights=None,bias=None) -> None:
+    def __init__(self,inputs:np.array,n,activation = 'sigmoid',weights=None,bias=None,random_state=123,name=None) -> None:
         """Initializes the Layer with the given parameters
 
         Args:
-            name (str): Name of the layer
+            name (str): Name of the layer, defaults to None
             inputs (np.array): The inputs to the layer
             n ([type]): Number of neurons in the layer
             activation (str, optional): The activation function to use ['sigmoid','tanh']. Defaults to 'sigmoid'.
             weights ([type], optional): The weights for the neural network, choses random weights if not passed. Defaults to None.
             bias ([type], optional): The bias for the neural network, choses random bias if not passed. Defaults to None.
         """    
-        np.random.seed(1)    
+        np.random.seed(random_state)    
         self.inputs = inputs
         self.weights = weights
         self.bias = bias
         self.name = name
+        self.random_state = random_state
         if self.weights is None:
             self.weights = np.random.randn(n,inputs.shape[0])
         if self.bias is None:
             self.bias = np.zeros((n,1))
-        self.activation = activation
+        if activation.strip().lower() not in ['sigmoid','tanh','relu']:
+            raise ValueError('Activation should be among [sigmoid,tanh,relu]')
+        else:
+            self.activation = activation
     def __sigmoid(self,x:np.array)->np.array:
         """Sigmoid activation function for the neural network
         Calculates sigmoid value by using the formula sigmoid(z) = 1/(1+e^(-z))
@@ -34,6 +38,30 @@ class Layer:
             np.array: The array of sigmoid values
         """        
         return 1/(1+np.exp(-x))
+    def __relu(self,x:np.array)->np.array:
+        """Returns the ReLU function applied on that array
+
+        Args:
+            x (np.array): The array on which you want to apply the ReLU function on
+
+        Returns:
+            np.array: The array with ReLU function applied 
+        """              
+        return x if x>0 else 0
+    def derivative(self)->np.array:
+        """Returns the differentiation of the activation function for a corresponding layer
+
+        Returns:
+            np.array: The array containing the derivative of the activation function
+        """        
+        a = self.fit()
+        if self.activation.strip().lower() == 'sigmoid':
+            return a*(1-a)
+        elif self.activation.strip().lower() == 'tanh':
+            return 1-(a**2)
+        elif self.activation.strip().lower() == 'relu':
+            return 1 if a>0 else 0
+
     def fit(self)->np.array:
         """Fits the layer according to the formula a = activation_function(wx+b)
 
@@ -45,6 +73,8 @@ class Layer:
             a = self.__sigmoid(z)
         elif self.activation.strip().lower() == 'tanh':
             a = np.tanh(z)
+        elif self.activation.strip().lower() == 'relu':
+            a = self.__relu(z)
         return a
 class Network:
     def __init__(self,layers:list) -> None:
@@ -60,7 +90,6 @@ class Network:
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
-        print('Initialized the neural network')
     def fit(self)->np.array:
         """Propagates through the layers and returns the final output
 
@@ -89,7 +118,7 @@ class Network:
         summary_df['Layer Name'] = layer_name
         summary_df['Weights'] = layer_weights
         summary_df['Bias'] = layer_bias
-        summary_df['Total parameters'] = total_params
+        summary_df['Total Parameters'] = total_params
         return summary_df
     @property
     def params(self)->list:
