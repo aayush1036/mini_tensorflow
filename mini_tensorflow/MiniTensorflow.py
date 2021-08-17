@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 class Layer:
     def __init__(self,inputs:np.array,n,activation = 'sigmoid',weights=None,bias=None,random_state=123,name=None) -> None:
         """Initializes the Layer with the given parameters
