@@ -37,9 +37,9 @@ def fit(self)->np.array:
 ```
 Fits the layer according to the activation function given to that layer<br>
 For the process of fitting, it first calculates Z according to the equation <br>
-$Z^{[l]} = W^{[l]} \times X^{[l-1]} + b^{[l]}$<br>
+<img src="https://i.ibb.co/q0YYBH5/eq1.png" alt="eq1" border="0"><br>
 Then calculates the activation function by using the formula<br>
-$a^{[l]} = g^{[l]}(Z^{[l]})$
+<img src="https://i.ibb.co/GCzDGKH/eq2.png" alt="eq2" border="0"><br>
 Returns: np.array - Numpy array of the outputs of the activation function applied to the Z function
 Example<br>
 ```python3
