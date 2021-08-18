@@ -130,7 +130,7 @@ class Network:
         for layer in self.layers:
             params_list.append(layer.weights.size+layer.bias.size)
         return params_list
-    def compute_cost(self,y:np.array)->float:
+    def compute_cost(self,y:np.array,natural_log=False)->float:
         """Calculates the cost of error compared to a given set of y values 
 
         Args:
@@ -140,5 +140,8 @@ class Network:
             float: The cost at that iteration
         """       
         outputs = self.fit()
-        cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
+        if natural_log:
+            cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
+        else:
+            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
