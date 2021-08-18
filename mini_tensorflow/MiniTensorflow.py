@@ -59,15 +59,7 @@ class Layer:
         elif self.activation.strip().lower() == 'tanh':
             return 1-(a**2)
         elif self.activation.strip().lower() == 'relu':
-            shape = a.shape
-            flatten = a.flatten()
-            deriv = []
-            for element in flatten:
-                if element <= 0:
-                    deriv.append(0)
-                else:
-                    deriv.append(1)
-            return np.array(deriv,dtype=float).reshape(shape)
+            return np.array([1 if i>=0 else 0 for i in a.flatten()],dtype=float).reshape(a.shape)
 
     def fit(self)->np.array:
         """Fits the layer according to the formula a = activation_function(wx+b)
