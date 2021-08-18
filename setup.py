@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 with open('README.md','r') as f:
     long_description = f.read()
-VERSION = '0.1.7'
+VERSION = '0.1.8'
 DESCRIPTION = 'Ease working with neural networks'
-LONG_DESCRIPTION = 'A package that allows to build simple streams of video, audio and camera data.'
+LONG_DESCRIPTION = 'Ease working with neural networks and incorporate statistical concepts as well'
 
 # Setting up
 setup(
