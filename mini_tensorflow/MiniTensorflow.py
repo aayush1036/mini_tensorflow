@@ -89,15 +89,23 @@ class Network:
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
-    def fit(self)->np.array:
-        """Propagates through the layers and returns the final output
+    def fit(self,get_history=False)->tuple:
+        """Propagates through the network and returns the output and history of outputs if specified
+
+        Args:
+            get_history (bool, optional): Whether you want outputs of all layers or not. Defaults to False
 
         Returns:
-            np.array: The array containing the output of the network
-        """        
-        for layer in self.layers[1:]:
+            tuple: A tuple containing the output of the network and history if specified
+        """                     
+        memory = {}
+        for layer in self.layers:
             output = layer.fit()
-        return output
+            memory[layer.name] = output
+        if get_history:
+            return output, memory
+        else:
+            return output
     def summary(self)->pd.DataFrame:
         """Returns the DataFrame containing the summary of the network passed to it
 
@@ -130,15 +138,21 @@ class Network:
         for layer in self.layers:
             params_list.append(layer.weights.size+layer.bias.size)
         return params_list
-    def compute_cost(self,y:np.array)->float:
-        """Calculates the cost of error compared to a given set of y values 
+    def compute_cost(self,y:np.array,natural_log=True)->float:
+        """Calculates the cost of the network compared to the target
 
         Args:
-            y (np.array): The target vector/dependent variable
+            y (np.array): Target values for the network 
+            natural_log (bool, optional): Whether you want to use log10 or natural log. Defaults to True.
 
         Returns:
-            float: The cost at that iteration
-        """       
+            float: The cost of that network
+        """               
         outputs = self.fit()
-        cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
+        if natural_log:
+            cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
+        else:
+            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
+    def backward_propaagation(self):
+        diff = {}
