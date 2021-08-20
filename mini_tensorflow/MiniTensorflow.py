@@ -97,15 +97,23 @@ class Network:
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
-    def fit(self)->np.array:
-        """Propagates through the layers and returns the final output
+    def fit(self,all_layers=False)->tuple:
+        """Propagates through the network and returns the final output
+
+        Args:
+            all_layers (bool, optional): If you want the output of all layers or not. Defaults to False.
 
         Returns:
-            np.array: The array containing the output of the network
-        """        
-        for layer in self.layers[1:]:
+            tuple: A tuple containing the output of the network and history also if specified
+        """              
+        memory = {}
+        for layer in self.layers:
             output = layer.fit()
-        return output
+            memory[layer.name] = output
+        if all_layers:
+            return output, memory
+        else:
+            return output
     def summary(self)->pd.DataFrame:
         """Returns the DataFrame containing the summary of the network passed to it
 
@@ -138,15 +146,19 @@ class Network:
         for layer in self.layers:
             params_list.append(layer.weights.size+layer.bias.size)
         return params_list
-    def compute_cost(self,y:np.array)->float:
-        """Calculates the cost of error compared to a given set of y values 
+    def compute_cost(self,y:np.array,natural_log=True)->float:
+        """Calculates the cost incurred during fitting the network compared to original values
 
         Args:
-            y (np.array): The target vector/dependent variable
+            y (np.array): The desired output/target variable
+            natural_log (bool, optional): Whether you want to consider log10 or natural log while calculating cost. Defaults to True.
 
         Returns:
-            float: The cost at that iteration
-        """       
+            float: The cost of the network
+        """             
         outputs = self.fit()
-        cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
+        if natural_log:
+            cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
+        else:
+            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))            
         return cost
