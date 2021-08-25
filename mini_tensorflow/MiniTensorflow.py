@@ -59,15 +59,7 @@ class Layer:
         elif self.activation.strip().lower() == 'tanh':
             return 1-(a**2)
         elif self.activation.strip().lower() == 'relu':
-            shape = a.shape
-            flatten = a.flatten()
-            deriv = []
-            for element in flatten:
-                if element <= 0:
-                    deriv.append(0)
-                else:
-                    deriv.append(1)
-            return np.array(deriv,dtype=float).reshape(shape)
+            return np.int64(a>0)
 
     def fit(self)->np.array:
         """Fits the layer according to the formula a = activation_function(wx+b)
@@ -84,7 +76,7 @@ class Layer:
             a = self.__relu(z)
         return a
 class Network:
-    def __init__(self,layers:list) -> None:
+    def __init__(self,layers:list,y:list) -> None:
         """Initializes the neural network with the given layers
 
         Args:
@@ -97,20 +89,21 @@ class Network:
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
-    def fit(self,all_layers=False)->tuple:
-        """Propagates through the network and returns the final output
+        self.y = y
+    def fit(self,get_history=False)->tuple:
+        """Propagates through the network and returns the output and history of outputs if specified
 
         Args:
-            all_layers (bool, optional): If you want the output of all layers or not. Defaults to False.
+            get_history (bool, optional): Whether you want outputs of all layers or not. Defaults to False
 
         Returns:
-            tuple: A tuple containing the output of the network and history also if specified
-        """              
+            tuple: A tuple containing the output of the network and history if specified
+        """                     
         memory = {}
         for layer in self.layers:
             output = layer.fit()
             memory[layer.name] = output
-        if all_layers:
+        if get_history:
             return output, memory
         else:
             return output
@@ -147,18 +140,23 @@ class Network:
             params_list.append(layer.weights.size+layer.bias.size)
         return params_list
     def compute_cost(self,y:np.array,natural_log=True)->float:
-        """Calculates the cost incurred during fitting the network compared to original values
+        """Calculates the cost of the network compared to the target
 
         Args:
-            y (np.array): The desired output/target variable
-            natural_log (bool, optional): Whether you want to consider log10 or natural log while calculating cost. Defaults to True.
+            y (np.array): Target values for the network 
+            natural_log (bool, optional): Whether you want to use log10 or natural log. Defaults to True.
 
         Returns:
-            float: The cost of the network
-        """             
+            float: The cost of that network
+        """               
         outputs = self.fit()
         if natural_log:
             cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
         else:
-            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))            
+            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
+    def backward_propaagation(self):
+        output = self.fit()
+        d_cost = -self.y/output + (1-self.y)/(1-output)
+        prod = d_cost*self.layers[-1].fit()*self.layers[-1].weight
+        layers_copy = self.layers[:-1].copy()
