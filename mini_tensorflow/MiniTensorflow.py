@@ -59,7 +59,7 @@ class Layer:
         elif self.activation.strip().lower() == 'tanh':
             return 1-(a**2)
         elif self.activation.strip().lower() == 'relu':
-            return 1 if a>0 else 0
+            return np.int64(a>0)
 
     def fit(self)->np.array:
         """Fits the layer according to the formula a = activation_function(wx+b)
@@ -76,7 +76,7 @@ class Layer:
             a = self.__relu(z)
         return a
 class Network:
-    def __init__(self,layers:list) -> None:
+    def __init__(self,layers:list,y:list) -> None:
         """Initializes the neural network with the given layers
 
         Args:
@@ -89,6 +89,7 @@ class Network:
         for layer in layers:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
+        self.y = y
     def fit(self,get_history=False)->tuple:
         """Propagates through the network and returns the output and history of outputs if specified
 
@@ -155,4 +156,7 @@ class Network:
             cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
     def backward_propaagation(self):
-        diff = {}
+        output = self.fit()
+        d_cost = -self.y/output + (1-self.y)/(1-output)
+        prod = d_cost*self.layers[-1].fit()*self.layers[-1].weight
+        layers_copy = self.layers[:-1].copy()
