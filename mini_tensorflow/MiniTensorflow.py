@@ -22,8 +22,8 @@ class Layer:
             self.weights = np.random.randn(n,inputs.shape[0])
         if self.bias is None:
             self.bias = np.zeros((n,1))
-        if activation.strip().lower() not in ['sigmoid','tanh','relu']:
-            raise ValueError('Activation should be among [sigmoid,tanh,relu]')
+        if activation.strip().lower() not in ['sigmoid','tanh','relu','softmax']:
+            raise ValueError('Activation should be among [sigmoid,tanh,relu,softmax]')
         else:
             self.activation = activation
     def __sigmoid(self,x:np.array)->np.array:
@@ -74,6 +74,8 @@ class Layer:
             a = np.tanh(z)
         elif self.activation.strip().lower() == 'relu':
             a = self.__relu(z)
+        elif self.activation.strip().lower() == 'softmax':
+            a = np.exp(z)/np.exp(z).sum(axis=0)
         return a
 class Network:
     def __init__(self,layers:list,y:list) -> None:
