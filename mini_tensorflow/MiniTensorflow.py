@@ -170,6 +170,7 @@ class Network:
         return cost
     def backward_propaagation(self):
         output = self.fit()
-        d_cost = -self.y/output + (1-self.y)/(1-output)
-        prod = d_cost*self.layers[-1].fit()*self.layers[-1].weight
-        layers_copy = self.layers[:-1].copy()
+        dj = -self.y/output + (1-self.y)/(1-output)
+        prod = dj*self.layers[-1].derivative()
+        for layer in reversed(self.layers[:-1]):
+            dz_layer = np.dot()
