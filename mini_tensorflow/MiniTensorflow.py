@@ -89,7 +89,7 @@ class Layer:
         a = self.activations[self.activation](z)
         return a
 class Network:
-    def __init__(self,layers:list,y:list) -> None:
+    def __init__(self,layers:list,y:list,alpha=0.01) -> None:
         """Initializes the neural network with the given layers
 
         Args:
@@ -103,6 +103,8 @@ class Network:
             if not isinstance(layer,Layer):
                 raise TypeError('All the values in the layers list should by Layer instances')
         self.y = y
+        self.m = self.y.size
+        self.alpha = alpha
     def fit(self,get_history=False)->tuple:
         """Propagates through the network and returns the output and history of outputs if specified
 
@@ -168,9 +170,21 @@ class Network:
         else:
             cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
         return cost
-    def backward_propaagation(self):
+    def backward_propagation(self):
+        grads = {}
         output = self.fit()
-        dj = -self.y/output + (1-self.y)/(1-output)
+        dj = -(self.y/output) + (1-self.y)/(1-output)
         prod = dj*self.layers[-1].derivative()
-        for layer in reversed(self.layers[:-1]):
-            dz_layer = np.dot()
+        self.layers[-1].weights = self.layers[-1].weights - (self.alpha*np.dot(prod, self.layers[-1].inputs.T))
+        self.layers[-1].bias = self.layers[-1].bias - (self.alpha*np.sum(output-self.y,axis=1,keepdims=True))
+        prod = np.dot(self.layers[-1].weights.T,prod)
+        for i in reversed(range(len(self.layers[:-1]))):
+            prod = prod * self.layers[i].derivative()
+            dw_layer = np.dot(prod, self.layers[i].inputs.T)/self.m
+            db_layer = np.sum(prod, axis=1,keepdims=True)/self.m
+            grads[f'dw_{self.layers[i].name}'] = dw_layer
+            grads[f'db_{self.layers[i].name}'] = db_layer
+            self.layers[i].weights = self.layers[i].weights-(self.alpha*dw_layer)
+            self.layers[i].bias = self.layers[i].bias-(self.alpha*db_layer)
+            prod = np.dot(self.layers[i].weights.T, prod)
+        return grads
