@@ -25,8 +25,9 @@ class Layer:
         if activation.strip().lower() not in ['sigmoid','tanh','relu','softmax']:
             raise ValueError('Activation should be among [sigmoid,tanh,relu,softmax]')
         else:
-            self.activation = activation
-    def __sigmoid(self,x:np.array)->np.array:
+            self.activation = activation.strip().lower()
+        self.activations = {'sigmoid':self.__sigmoid,'tanh':np.tanh,'relu':self.__relu, 'leaky relu':self.__leaky_relu, 'softmax':self.__softmax}
+    def __sigmoid(self,x:np.array,derivative=False)->np.array:
         """Sigmoid activation function for the neural network
         Calculates sigmoid value by using the formula sigmoid(z) = 1/(1+e^(-z))
 
@@ -36,8 +37,12 @@ class Layer:
         Returns:
             np.array: The array of sigmoid values
         """        
-        return 1/(1+np.exp(-x))
-    def __relu(self,x:np.array)->np.array:
+        a =  1/(1+np.exp(-x))
+        if not derivative:
+            return a
+        else:
+            return a*(1-a)
+    def __relu(self,x:np.array,derivative=False)->np.array:
         """Returns the ReLU function applied on that array
 
         Args:
@@ -46,7 +51,20 @@ class Layer:
         Returns:
             np.array: The array with ReLU function applied 
         """              
-        return np.maximum(0,x)
+        a = np.maximum(0,x)
+        if not derivative:
+            return a
+        else:
+            return np.int64(a>0)
+    def __leaky_relu(self,x,alpha=0.01,derivative=False):
+        a = np.maximum(alpha*x, x)
+        if not derivative:
+            return a
+        else:
+            return np.array([i if i>alpha*i else alpha for i in a.flatten()]).reshape(a.shape)
+
+    def __softmax(self,x):
+        return np.exp(x)/np.sum(np.exp(x),axis=1)
     def derivative(self)->np.array:
         """Returns the differentiation of the activation function for a corresponding layer
 
@@ -54,11 +72,11 @@ class Layer:
             np.array: The array containing the derivative of the activation function
         """        
         a = self.fit()
-        if self.activation.strip().lower() == 'sigmoid':
+        if self.activation == 'sigmoid':
             return a*(1-a)
-        elif self.activation.strip().lower() == 'tanh':
+        elif self.activation == 'tanh':
             return 1-(a**2)
-        elif self.activation.strip().lower() == 'relu':
+        elif self.activation == 'relu':
             return np.int64(a>0)
 
     def fit(self)->np.array:
@@ -68,14 +86,7 @@ class Layer:
             np.array: The output of the activation function for that layer
         """        
         z = np.dot(self.weights, self.inputs) + self.bias
-        if self.activation.strip().lower() == 'sigmoid':
-            a = self.__sigmoid(z)
-        elif self.activation.strip().lower() == 'tanh':
-            a = np.tanh(z)
-        elif self.activation.strip().lower() == 'relu':
-            a = self.__relu(z)
-        elif self.activation.strip().lower() == 'softmax':
-            a = np.exp(z)/np.exp(z).sum(axis=0)
+        a = self.activations[self.activation](z)
         return a
 class Network:
     def __init__(self,layers:list,y:list) -> None:
