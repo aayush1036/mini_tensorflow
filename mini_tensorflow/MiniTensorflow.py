@@ -249,4 +249,17 @@ class Network:
             return history_dict
         else:
             return None
+    def predict(self,values:np.array)->np.array:
+        """Performs prediction for the given values 
+
+        Args:
+            values (np.array): The values on which you want to predict 
+        Returns:
+            np.array: The array of predictions 
+        """        
+        outputs = self.fit()
+        if self.layers[-1].activation == 'sigmoid':
+            return np.array([1 if i>0 else 0 for i in outputs]).reshape(outputs.shape)
+        elif self.layers[-1].activation == 'softmax':
+            return np.argmax(outputs, axis=0)
             

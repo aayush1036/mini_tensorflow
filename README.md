@@ -129,6 +129,15 @@ Example:<br>
 # Goal - to train the network for 500 epochs and get history at each epoch
 nn.train(epochs=500, history=True)
 ```
+Predict function <br>
+Performs predictions on the given values 
+```python 
+def predict(self,values:np.array)->np.array:
+```
+Args:<br>
+1. values (np.array): The values on which you want to predict 
+Returns:<br>
+np.array: The array of predictions
 
 Attributes of a network<br>
 1. params - The list containing total number of parameters initialized at each layer of the network
