@@ -19,7 +19,7 @@ class Layer:
         self.name = name
         self.random_state = random_state
         if self.weights is None:
-            self.weights = np.random.randn(n,inputs.shape[0])
+            self.weights = np.random.randn(n,inputs.shape[0])*0.01
         if self.bias is None:
             self.bias = np.zeros((n,1))
         if activation.strip().lower() not in ['sigmoid','tanh','relu','softmax']:
@@ -175,8 +175,12 @@ class Network:
         output = self.fit()
         dj = -(self.y/output) + (1-self.y)/(1-output)
         prod = dj*self.layers[-1].derivative()
-        self.layers[-1].weights = self.layers[-1].weights - (self.alpha*np.dot(prod, self.layers[-1].inputs.T))
-        self.layers[-1].bias = self.layers[-1].bias - (self.alpha*np.sum(output-self.y,axis=1,keepdims=True))
+        dw_output = np.dot(prod, self.layers[-1].inputs.T)/self.m
+        db_output = np.sum(prod,axis=1,keepdims=True)/self.m
+        grads[f'dw_{self.layers[-1].name}'] = dw_output
+        grads[f'db_{self.layers[-1].name}'] = db_output
+        self.layers[-1].weights = self.layers[-1].weights - (self.alpha*dw_output)
+        self.layers[-1].bias = self.layers[-1].bias - (self.alpha*db_output)
         prod = np.dot(self.layers[-1].weights.T,prod)
         for i in reversed(range(len(self.layers[:-1]))):
             prod = prod * self.layers[i].derivative()
@@ -188,3 +192,13 @@ class Network:
             self.layers[i].bias = self.layers[i].bias-(self.alpha*db_layer)
             prod = np.dot(self.layers[i].weights.T, prod)
         return grads
+    def train(self, epochs,history=False):
+        history_dict = {}
+        for i in range(epochs):
+            grads = self.backward_propagation()
+            history_dict[f'epoch_{i}'] = grads
+        if history:
+            return history_dict
+        else:
+            return None
+            
