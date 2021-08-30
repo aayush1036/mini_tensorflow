@@ -27,7 +27,7 @@ class Layer:
         else:
             self.activation = activation.strip().lower()
         self.activations = {'sigmoid':self.__sigmoid,'tanh':np.tanh,'relu':self.__relu, 'leaky relu':self.__leaky_relu, 'softmax':self.__softmax}
-    def __sigmoid(self,x:np.array,derivative=False)->np.array:
+    def __sigmoid(self,x:np.array)->np.array:
         """Sigmoid activation function for the neural network
         Calculates sigmoid value by using the formula sigmoid(z) = 1/(1+e^(-z))
 
@@ -38,11 +38,8 @@ class Layer:
             np.array: The array of sigmoid values
         """        
         a =  1/(1+np.exp(-x))
-        if not derivative:
-            return a
-        else:
-            return a*(1-a)
-    def __relu(self,x:np.array,derivative=False)->np.array:
+        return a 
+    def __relu(self,x:np.array)->np.array:
         """Returns the ReLU function applied on that array
 
         Args:
@@ -52,18 +49,33 @@ class Layer:
             np.array: The array with ReLU function applied 
         """              
         a = np.maximum(0,x)
-        if not derivative:
-            return a
-        else:
-            return np.int64(a>0)
-    def __leaky_relu(self,x,alpha=0.01,derivative=False):
+        return a 
+    def __leaky_relu(self,x:np.array,alpha=0.01,derivative=False)->np.array:
+        """Implements the leaky relu activation function 
+
+        Args:
+            x (np.array): The inputs on which leaky relu activation function has to be implemented
+            alpha (float, optional): The negative slope for leaky relu. Defaults to 0.01.
+            derivative (bool, optional): Whether to return derivative or not. Defaults to False.
+
+        Returns:
+            np.array: The array containing the leaky relu activation function or its derivative
+        """        
         a = np.maximum(alpha*x, x)
         if not derivative:
             return a
         else:
-            return np.array([i if i>alpha*i else alpha for i in a.flatten()]).reshape(a.shape)
+            return np.array([i if i>alpha*i else alpha for i in x.flatten()]).reshape(x.shape)
 
-    def __softmax(self,x):
+    def __softmax(self,x:np.array)->np.array:
+        """Implements the softmax activation function
+
+        Args:
+            x (np.array): Input for which the softmax activation function has to be implemented
+
+        Returns:
+            np.array: The array containing the softmax activation function
+        """        
         return np.exp(x)/np.sum(np.exp(x),axis=1)
     def derivative(self)->np.array:
         """Returns the differentiation of the activation function for a corresponding layer
@@ -78,6 +90,8 @@ class Layer:
             return 1-(a**2)
         elif self.activation == 'relu':
             return np.int64(a>0)
+        elif self.activation == 'leaky relu':
+            return self.__leaky_relu(a,derivative=True)
 
     def fit(self)->np.array:
         """Fits the layer according to the formula a = activation_function(wx+b)
@@ -122,6 +136,7 @@ class Network:
             return output, memory
         else:
             return output
+    @property
     def summary(self)->pd.DataFrame:
         """Returns the DataFrame containing the summary of the network passed to it
 
@@ -163,18 +178,42 @@ class Network:
 
         Returns:
             float: The cost of that network
+        """       
+        if self.layers[-1].activation == 'sigmoid':        
+            outputs = self.fit()
+            if natural_log:
+                cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
+            else:
+                cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
+            return cost
+    def __one_hot(self)->np.array:
+        """Implements the one hot encoding 
+        NOTE - For internal purposes only
+        Used for the back propagation in case of softmax activation function
+
+        Returns:
+            np.array: The one hot encoded version of the vector 
+        """        
+        one_hot = np.zeros(shape=(self.y.size, self.y.max() + 1))
+        one_hot[np.arange(self.y.size), self.y] = 1 
+        return one_hot.T
+    def __backward_propagation(self)->dict:
+        """Implements the back propagation in the neural network 
+        NOTE - For internal use only 
+        Will be used for training the network 
+
+        Returns:
+            dict: The dictionary containing the derivatives of parameters at every layer
         """               
-        outputs = self.fit()
-        if natural_log:
-            cost = -np.mean((y*np.log(outputs))+((1-y)*np.log(1-outputs)))
-        else:
-            cost = -np.mean((y*np.log10(outputs))+((1-y)*np.log10(1-outputs)))
-        return cost
-    def backward_propagation(self):
         grads = {}
         output = self.fit()
-        dj = -(self.y/output) + (1-self.y)/(1-output)
-        prod = dj*self.layers[-1].derivative()
+        
+        if self.layers[-1].activation == 'softmax':
+            one_hot_y = self.__one_hot(self.y)
+            prod = output-one_hot_y
+        elif self.layers[-1].activation == 'sigmoid':
+            prod = output-self.y
+        
         dw_output = np.dot(prod, self.layers[-1].inputs.T)/self.m
         db_output = np.sum(prod,axis=1,keepdims=True)/self.m
         grads[f'dw_{self.layers[-1].name}'] = dw_output
@@ -192,10 +231,19 @@ class Network:
             self.layers[i].bias = self.layers[i].bias-(self.alpha*db_layer)
             prod = np.dot(self.layers[i].weights.T, prod)
         return grads
-    def train(self, epochs,history=False):
+    def train(self, epochs:int,history=False)->dict:
+        """Trains the network for the specified number of iterations 
+
+        Args:
+            epochs (int): The number of iterations for which you want to train the network 
+            history (bool, optional): If you want the history of gradients at each iterations. Defaults to False.
+
+        Returns:
+            dict: The dictionary containing the gradients of parameters at each iteration 
+        """               
         history_dict = {}
         for i in range(epochs):
-            grads = self.backward_propagation()
+            grads = self.__backward_propagation()
             history_dict[f'epoch_{i}'] = grads
         if history:
             return history_dict
