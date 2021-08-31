@@ -209,7 +209,7 @@ class Network:
         output = self.fit()
         
         if self.layers[-1].activation == 'softmax':
-            one_hot_y = self.__one_hot(self.y)
+            one_hot_y = self.__one_hot()
             prod = output-one_hot_y
         elif self.layers[-1].activation == 'sigmoid':
             prod = output-self.y
@@ -262,4 +262,3 @@ class Network:
             return np.array([1 if i>0 else 0 for i in outputs]).reshape(outputs.shape)
         elif self.layers[-1].activation == 'softmax':
             return np.argmax(outputs, axis=0)
-            
