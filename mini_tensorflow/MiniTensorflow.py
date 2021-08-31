@@ -76,7 +76,7 @@ class Layer:
         Returns:
             np.array: The array containing the softmax activation function
         """        
-        return np.exp(x)/np.sum(np.exp(x),axis=1)
+        return np.exp(x)/np.sum(np.exp(x),axis=0)
     def derivative(self)->np.array:
         """Returns the differentiation of the activation function for a corresponding layer
 
